@@ -1,7 +1,8 @@
 # RubyOnRails-Ubuntu-Installer
 
 A shell script that installs Ruby and Ruby On Rails, Git included.
-Though it is not for people who already set their Git workflow
+
+Though it is not for people who already set their Git workflow.
 
 ----------
 
