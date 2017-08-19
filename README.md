@@ -22,6 +22,6 @@ Installation
         ~/RubyOnRails-Ubuntu-Installer$ chmod +x ror-inst.bash; ./ror-inst.bash
 * Follow the on screen instructions.
 
-If you want, you can look at this video to see the process:
+If you want, you can look at this video to see the process (The video bases on an older Gist version, beware.):
 
 [![Thumbnail](http://img.youtube.com/vi/2J2RINHi6H0/0.jpg)](http://www.youtube.com/watch?v=2J2RINHi6H0 "ror-inst.bash DON'T USE SUDO TO RUN THIS")
