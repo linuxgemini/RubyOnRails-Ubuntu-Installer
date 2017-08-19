@@ -23,4 +23,5 @@ Installation
 * Follow the on screen instructions.
 
 If you want, you can look at this video to see the process:
+
 [![Thumbnail](http://img.youtube.com/vi/2J2RINHi6H0/0.jpg)](http://www.youtube.com/watch?v=2J2RINHi6H0 "ror-inst.bash DON'T USE SUDO TO RUN THIS")
