@@ -12,6 +12,28 @@ scriptLoc=$(readlink -f "$0")
 
 fileStart=~/.ror-inst-prog
 
+function test_command {
+	if hash $1 2>/dev/null; then
+		return 0
+	else
+		echo "$1"
+		return 1
+	fi
+}
+
+if test_command "ruby" >/dev/null; then
+	rubyInstalled=yes
+fi
+
+if test_command "rails" >/dev/null; then
+	railsInstalled=yes
+fi
+
+if [[ "$rubyInstalled" = "yes" || "$railsInstalled" = "yes" ]]; then
+	printf "\nUm, you already have Ruby (or Rails).\nThis script needs the system to not have Ruby AND Rails.\n\n"
+	exit
+fi
+
 if [[ -z $(grep -iE 'xenial|zesty' /etc/os-release) ]]; then
 	printf "\nSorry! I don't currently support that distro.\n\n"
 	exit 1
@@ -19,21 +41,23 @@ fi
 
 if [[ "$isSomethingRoot" = "yes" ]]; then
 	printf "\nHello, It seems like you are running this script as root.\n\n"
-	read -p "Have you used \"sudo $0\" to run this script? [Y/N]: " rCheck
-	case $rCheck in
-		[Yy]* )
-			printf "\nPlease run the script WITHOUT sudo.\n\n"
-			exit 1
-			;;
-		[Nn]* )
-			printf "\nHang on tight, the process is starting.\n\n"
-			isScriptReady=yes
-			;;
-		* )
-			printf "\nPlease answer yes or no.\n\n"
-			unset rCheck
-			;;
-	esac
+	while [[ -z $rCheck && -z $isScriptReady ]]; do
+		read -p "Have you used \"sudo $0\" to run this script? [Y/N]: " rCheck
+		case $rCheck in
+			[Yy]* )
+				printf "\nPlease run the script WITHOUT sudo.\n\n"
+				exit 1
+				;;
+			[Nn]* )
+				printf "\nHang on tight, the process is starting.\n\n"
+				isScriptReady=yes
+				;;
+			* )
+				printf "\nPlease answer yes or no.\n\n"
+				unset rCheck
+				;;
+		esac
+	done
 fi
 
 function test_command {
@@ -121,7 +145,7 @@ if [[ "$isScriptReady" = "yes" ]]; then
 
 					printf "\nScript in sleep for 15 sec, sorry.\n\n"
 					sleep 15
-					while [[ -z $yn ]]; do
+					while [[ -z $yn && -z $confThree]]; do
 						read -p "Are there any errors? [Y/N]: " yn
 						case $yn in
 							[Yy]* )
@@ -130,14 +154,7 @@ if [[ "$isScriptReady" = "yes" ]]; then
 								;;
 							[Nn]* )
 								cd ~
-								git clone https://github.com/rbenv/rbenv.git ~/.rbenv
-								echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc
-								echo 'eval "$(rbenv init -)"' >> ~/.bashrc
-								rm $fileStart
-								touch $fileStart
-								echo rbenv-i >> $fileStart
-								printf "\nRestarting shell, re-run the script ( $scriptLoc ) to resume.\n\n"
-								exec $SHELL
+								confThree=yes
 								;;
 							* )
 								printf "\nPlease answer yes or no.\n\n"
@@ -145,6 +162,14 @@ if [[ "$isScriptReady" = "yes" ]]; then
 								;;
 						esac
 					done
+					git clone https://github.com/rbenv/rbenv.git ~/.rbenv
+					echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc
+					echo 'eval "$(rbenv init -)"' >> ~/.bashrc
+					rm $fileStart
+					touch $fileStart
+					echo rbenv-i >> $fileStart
+					printf "\nRestarting shell, re-run the script ( $scriptLoc ) to resume.\n\n"
+					exec $SHELL
 					;;
 				rbenv-i )
 					git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build
@@ -173,7 +198,7 @@ if [[ "$isScriptReady" = "yes" ]]; then
 					printf "\nScript in sleep for 15 sec, sorry.\n\n"
 					sleep 15
 
-					while [[ -z $yn2 ]]; do
+					while [[ -z $yn2 && -z $confTwo ]]; do
 						read -p "Do you have a Github Account? [Y/N]: " yn2
 						case $yn2 in
 							[Yy]* )
@@ -205,39 +230,11 @@ if [[ "$isScriptReady" = "yes" ]]; then
 										cat ~/.ssh/id_rsa.pub
 										printf "\n\n\nPlease copy this key and paste it on the link below:\nhttps://github.com/settings/ssh\n\nDO NOT USE CTRL+C FOR GOD'S SAKE\n\nTip: If you are using PuTTY, copy the entire terminal by right clicking on the title bar and \"Copy All to Clipboard\"\nPaste it to somewhere else and get your key.\n\n"
 
-										while [[ -z $yn3 ]]; do
+										while [[ -z $yn3 && -z $confOne ]]; do
 											read -p "Have you done it? [Y/N] " yn3
 											case $yn3 in
 												[Yy]* )
-													printf "\nScript in sleep for 5 sec, sorry.\n\n"
-													sleep 5
-
-													gem install rails -v 5.1.4
-
-													printf "\nScript in sleep for 15 sec, sorry.\n\n"
-													sleep 15
-
-													rbenv rehash
-
-													printf "\nScript in sleep for 15 sec, sorry.\n\n"
-													sleep 15
-
-													rails -v
-													printf "\n"
-
-													read -p "Pick an username for PostgreSql: " postgreUsername
-													while [[ -z $postgreUsername ]]; do
-														printf "\nNo input, try again.\n\n"
-														read -p "Pick an username for PostgreSql: " postgreUsername
-													done
-													if does_it_exist "postgreUsername" >/dev/null; then
-														sudo -u postgres createuser $postgreUsername -s
-													fi
-
-													printf "\nScript in sleep for 15 sec for the last time.\n\n"
-													sleep 15
-													printf "\nIf you want to check your steps again, go to the link below.\nhttps://gorails.com/setup/ubuntu/16.04\n\n"
-													exit
+													confOne=yes
 													;;
 												[Nn]* )
 													printf "\nAlright, I'll wait. Just write \"y\" and hit enter when you are done.\n\n"
@@ -253,42 +250,11 @@ if [[ "$isScriptReady" = "yes" ]]; then
 								else
 									printf "\nNo inputs are received, skipping Git Config...\nYou can recall this part by doing this after installation: $scriptLoc github\n\n"
 								fi
-								printf "\nScript in sleep for 5 sec, sorry.\n\n"
-								sleep 5
-
-								gem install rails -v 5.1.4
-
-								printf "\nScript in sleep for 15 sec, sorry.\n\n"
-								sleep 15
-
-								rbenv rehash
-
-								printf "\nScript in sleep for 15 sec, sorry.\n\n"
-								sleep 15
-
-								rails -v
-								printf "\n"
-
-								read -p "Pick an username for PostgreSql: " postgreUsername
-								while [[ -z $postgreUsername ]]; do
-									printf "\nNo input, try again.\n\n"
-									read -p "Pick an username for PostgreSql: " postgreUsername
-								done
-								if does_it_exist "postgreUsername" >/dev/null; then
-									sudo -u postgres createuser $postgreUsername -s
-								fi
-
-								printf "\nScript in sleep for 15 sec for the last time.\n\n"
-								sleep 15
-								printf "\nIf you want to check your steps again (or if you want to set your git settings), go to the link below.\nhttps://gorails.com/setup/ubuntu/16.04\n\n"
-								rm $fileStart
-								touch $fileStart
-								echo installEd >> $fileStart
-								exit
 								;;
 							[Nn]* )
-								printf "\nTHEN GO MAKE ONE AT github.com !\n\n"
-								unset yn2
+								printf "\nTHEN GO MAKE ONE AT github.com !\nThough, I am continuing.\n\n"
+								sleep 5
+								confTwo=yes
 								;;
 							* )
 								printf "\nPlease answer yes or no.\n\n"
@@ -296,6 +262,38 @@ if [[ "$isScriptReady" = "yes" ]]; then
 								;;
 						esac
 					done
+					printf "\nScript in sleep for 5 sec, sorry.\n\n"
+					sleep 5
+
+					gem install rails -v 5.1.4
+
+					printf "\nScript in sleep for 15 sec, sorry.\n\n"
+					sleep 15
+
+					rbenv rehash
+
+					printf "\nScript in sleep for 15 sec, sorry.\n\n"
+					sleep 15
+
+					rails -v
+					printf "\n"
+
+					read -p "Pick an username for PostgreSql: " postgreUsername
+					while [[ -z $postgreUsername ]]; do
+						printf "\nNo input, try again.\n\n"
+						read -p "Pick an username for PostgreSql: " postgreUsername
+					done
+					if does_it_exist "postgreUsername" >/dev/null; then
+						sudo -u postgres createuser $postgreUsername -s
+					fi
+
+					printf "\nScript in sleep for 15 sec for the last time.\n\n"
+					sleep 15
+					printf "\nDONE!\nIf you want to check your steps again (or if you want to set your git settings), go to the link below.\nhttps://gorails.com/setup/ubuntu/16.04\n\n"
+					rm $fileStart
+					touch $fileStart
+					echo installEd >> $fileStart
+					exit
 					;;
 				installEd )
 					printf "\nYou have already used this script.\n\n"
