@@ -60,15 +60,6 @@ if [[ "$isSomethingRoot" = "yes" ]]; then
 	done
 fi
 
-function test_command {
-	if hash $1 2>/dev/null; then
-		return 0
-	else
-		echo "$1"
-		return 1
-	fi
-}
-
 function does_it_exist {
 	if [[ -z $1 ]]; then
 		echo "$1"
