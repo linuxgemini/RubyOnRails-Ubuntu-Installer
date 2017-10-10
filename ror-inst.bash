@@ -29,11 +29,6 @@ if test_command "rails" >/dev/null; then
 	railsInstalled=yes
 fi
 
-if [[ "$rubyInstalled" = "yes" || "$railsInstalled" = "yes" ]]; then
-	printf "\nUm, you already have Ruby (or Rails).\nThis script needs the system to not have Ruby AND Rails.\n\n"
-	exit
-fi
-
 if [[ -z $(grep -iE 'xenial|zesty' /etc/os-release) ]]; then
 	printf "\nSorry! I don't currently support that distro.\n\n"
 	exit 1
@@ -125,6 +120,10 @@ if [[ "$isScriptReady" = "yes" ]]; then
 			fi
 			;;
 		* )
+			if [[ "$rubyInstalled" = "yes" || "$railsInstalled" = "yes" ]]; then
+				printf "\nUm, you already have Ruby (or Rails).\nThis script needs the system to not have Ruby AND Rails.\n\n"
+				exit
+			fi
 			case $progressStat in
 				startup )
 					sudo apt-get -y install curl
