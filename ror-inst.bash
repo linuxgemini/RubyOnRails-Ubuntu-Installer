@@ -89,7 +89,7 @@ if [[ "$isScriptReady" = "yes" ]]; then
 					read -p "What is your mail address?: " userMail
 				done
 				if does_it_exist "$userMail" >/dev/null; then
-					git config --global user.mail $userMail
+					git config --global user.email $userMail
 					if [[ -f ~/.ssh/id_rsa.pub ]]; then
 						printf "\nScript in sleep for 2 sec, sorry.\n\n"
 						sleep 2
@@ -203,7 +203,7 @@ if [[ "$isScriptReady" = "yes" ]]; then
 										read -p "What is your mail address?: " userMail
 									done
 									if does_it_exist "$userMail" >/dev/null; then
-										git config --global user.mail $userMail
+										git config --global user.email $userMail
 										if [[ ! -f ~/.ssh/id_rsa.pub ]]; then
 											if [[ ! -d ~/.ssh/ ]]; then
 												mkdir ~/.ssh/
